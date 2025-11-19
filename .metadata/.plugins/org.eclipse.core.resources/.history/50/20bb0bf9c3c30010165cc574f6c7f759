@@ -1,0 +1,146 @@
+package ch4_1;
+import java.io.IOException;
+import java.util.Random;
+
+public class Maze {
+ 
+    public final static int ICON_NUMBER = 3;
+    public final static int WALL = 1;
+    public final static int ROAD = 0;
+    public final static int AWARD = 2;
+    public final static int MAP_SIZE = 11;
+    public final static char UP = 'w';
+    public final static char DOWN = 's';
+    public final static char LEFT = 'a';
+    public final static char RIGHT = 'd';
+    public final static char EXIT = 'x';
+    public final static int CUR_STATE = 8;
+    public final static int MAXSTEPS = 30;
+    static int curX = 0;
+    static int curY = 0;
+    static int score = 0;
+    static int steps = 0;
+    static int[][] map;
+
+
+   
+    public static void generateMapRandom() {
+        Random random = new Random();
+        map = new int[MAP_SIZE][MAP_SIZE];
+        for (int line = 0; line < map.length; line++) {
+            map[line][0] = Maze.WALL;
+            map[line][map.length - 1] = Maze.WALL;
+            for (int col = 1; col < map[line].length - 1; col++) {
+                if (line == 0 || line == map.length - 1)
+                    map[line][col] = Maze.WALL;
+                else
+                    map[line][col] = random.nextInt(Maze.ICON_NUMBER);
+            }
+        }
+       
+        map[1][1] = Maze.CUR_STATE;
+        curX = 1;
+        curY = 1;
+        map[map.length - 2][map.length - 2] = Maze.ROAD;
+    }
+
+
+   
+    public static void printMap() {
+        for (int line = 0; line < map.length; line++) {
+            for (int col = 0; col <= map[line].length - 1; col++) {
+                System.out.print(map[line][col] + " ");
+            }
+            System.out.println("");
+        }
+    }
+
+
+   
+    public static char readDirectionKey() throws IOException {
+        char direction = (char) System.in.read();
+        while (direction != Maze.LEFT && direction != Maze.RIGHT
+                && direction != Maze.UP && direction != Maze.DOWN
+                && direction != Maze.EXIT)
+            direction = (char) System.in.read();
+        return direction;
+    }
+
+
+   
+    public static boolean isSuccess() {
+        if (map[map.length - 2][map.length - 2] == Maze.CUR_STATE) {
+            score += Maze.MAXSTEPS - steps;
+            return true;
+        } else
+            return false;
+    }
+
+
+    
+    public static boolean playGame() {
+        int state = Maze.ROAD;
+        while (!Maze.isSuccess() && steps < Maze.MAXSTEPS) {
+            map[curX][curY] = state;
+            try {
+                switch (readDirectionKey()) {
+                    case Maze.UP:
+                        if (map[curX - 1][curY] != Maze.WALL) {
+                            score += map[curX - 1][curY];
+                            state = map[curX - 1][curY];
+                            map[curX - 1][curY] = Maze.CUR_STATE;
+                            curX--;
+                            steps++;
+                        }
+                        break;
+                    case Maze.DOWN:
+                        if (map[curX + 1][curY] != Maze.WALL) {
+                            score += map[curX + 1][curY];
+                            state = map[curX + 1][curY];
+                            map[curX + 1][curY] = Maze.CUR_STATE;
+                            curX++;
+                            steps++;
+                        }
+                        break;
+                    case Maze.LEFT:
+                        if (map[curX][curY - 1] != Maze.WALL) {
+                            score += map[curX][curY - 1];
+                            state = map[curX][curY - 1];
+                            map[curX][curY - 1] = Maze.CUR_STATE;
+                            curY--;
+                            steps++;
+                        }
+                        break;
+                    case Maze.RIGHT:
+                        if (map[curX][curY + 1] != Maze.WALL) {
+                            score += map[curX][curY + 1];
+                            state = map[curX][curY + 1];
+                            map[curX][curY + 1] = Maze.CUR_STATE;
+                            curY++;
+                            steps++;
+                        }
+                        break;
+                    case Maze.EXIT:
+                        System.out.println("放弃挑战,退出游戏");
+                        System.exit(-1);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Maze.printMap();
+        }
+        return isSuccess();
+    }
+
+
+   
+    public static void main(String[] args) {
+        Maze.generateMapRandom();
+        Maze.printMap();
+        System.out.println("请输入 a(左) s(下) w(上) d(右) x(退出)");
+        if (Maze.playGame())
+            System.out.println("恭喜你,闯关成功!! 得分: " + score);
+        else
+            System.out.println("很遗憾,挑战失败,加油哦!!");
+    }
+}
